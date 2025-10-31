@@ -22,3 +22,5 @@ Top-level sections
 - Labs/
 
 Open a folder and read its `INDEX.md` to jump straight into material.
+
+Note: topic READMEs have been moved to a top-level `devops-topics/` folder for easier access (mirrors `devops-exercises/`). See `../devops-topics/INDEX.md` for the interview-ready topic list.
