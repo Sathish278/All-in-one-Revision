@@ -1,35 +1,46 @@
-# Add `bregman-arie/devops-exercises` as a submodule
+# devops-exercises (external submodule) — usage & guidance
 
-Goal
-- Add the well-known `devops-exercises` repository as a git submodule inside this workspace so you can reference its extensive topic/exercise content without copying it.
+This folder documents how we include the third-party `bregman-arie/devops-exercises` repository as an external submodule and how to use it safely from the revision hub.
 
-Why submodule
-- Keeps the original repository intact and attributed.
-- Avoids copying large amounts of content and respects licensing/no-derivatives restrictions.
-- Easy to update from upstream with `git submodule update --remote`.
+Why we keep it as a submodule
+--------------------------------
+- Preserves original authorship and license terms.
+- Avoids copying large exercise content into this repository (keeps repo size smaller).
+- Lets you update upstream content independently with git submodule commands.
 
-How to add the submodule (PowerShell)
+Current location
+----------------
+The submodule is added at the top-level path `devops-exercises/`.
 
-Run these commands from the repository root (`C:\Revison`):
+How to update the submodule
+---------------------------
+From the repository root run:
 
 ```powershell
-# add the submodule into devops-revision/external/devops-exercises
-git submodule add https://github.com/bregman-arie/devops-exercises.git devops-revision/external/devops-exercises
-git submodule update --init --recursive
-
-# later, to update the submodule to the latest upstream commit
-git submodule foreach --recursive 'git fetch origin && git checkout master && git pull origin master'
+# fetch the latest upstream branch and update the submodule working tree
+git submodule update --init --remote devops-exercises
 ```
 
-If your Git default branch is `main` replace `master` with `main` in the update command.
+If you prefer to fetch and checkout a specific branch inside the submodule:
 
-Notes on license
-- The upstream repository uses CC BY-NC-ND 3.0 (No Derivatives, Non-Commercial). Using it as a submodule to reference and read is fine; if you want to copy and modify content into this repo you must respect the licence and keep attribution. If you need derivative or commercial use, obtain permission or recreate content in your own words.
+```powershell
+cd devops-exercises
+git fetch origin
+git checkout main   # or master if upstream uses master
+git pull origin main
+cd ..
+git add devops-exercises
+git commit -m "Update devops-exercises submodule"
+```
 
-Mapping & next steps
-- Use `TOPICS.md` (in this folder) for a suggested mapping of upstream topics to local `devops-revision/` files.
-- After adding the submodule you can:
-  - Leave the content in the submodule and create local pointers (short READMEs that reference submodule files), or
-  - Copy selected topic files into `devops-revision/` (do this only when you confirm license compliance).
+License / attribution notes
+---------------------------
+- Upstream license: CC BY-NC-ND 3.0 (No Derivatives, Non-Commercial). This means you may read and reference the content, but you should not copy and re-publish modified versions of it.
+- To avoid license conflicts we: (a) keep the full exercise corpus as a submodule, and (b) write original, interview-focused READMEs under `devops-topics/` rather than copying material verbatim.
 
-If you'd like, I can create the pointer READMEs automatically after you add the submodule (or I can create them now and you can update paths once the submodule exists).
+How to use from the revision hub
+--------------------------------
+1. Read concise, interview-focused topics in `devops-topics/`.
+2. When you want exercises or worked solutions, open the link from `devops-revision/external/INDEX.md` which points into `devops-exercises/`.
+
+If you'd like, I can add a short checklist and a CI step to verify the submodule is initialized when cloning this repository.

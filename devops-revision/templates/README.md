@@ -1,10 +1,19 @@
 # Templates
 
-Study and lab templates to make note-taking and exercises consistent.
+Purpose
+-------
+Small templates to keep study notes, lab plans, and interview answers consistent and reproducible.
 
-Templates to add:
+Included templates
+------------------
+- `study-plan-template.md` — daily/weekly study plan template
+- `lab-template.md` — step-by-step lab/runbook template (prereqs, steps, expected outcome, cleanup)
 
-- `study-plan-template.md` - short daily/weekly study plan
-- `lab-template.md` - steps, prerequisites, expected outcome, cleanup
+How to use
+----------
+- Copy the template and update fields for the specific topic or lab.
+- Keep completed study plans in `devops-revision/archive/` if you want to track progress.
 
-Add templates as new files inside this folder.
+Contributing
+------------
+Add new templates as separate files in this folder. Keep them short (one page preferred).
