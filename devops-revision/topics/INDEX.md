@@ -17,5 +17,6 @@ Top-level topics:
 - [ansible](./ansible/README.md)
 - [git](./git/README.md)
 - [linux](./linux/README.md)
+- [cast-ai](./cast-ai/README.md)
 
 I will create a full README for `kubernetes` first as a template; confirm if you'd like a different starter topic.
