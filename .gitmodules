@@ -1,0 +1,3 @@
+[submodule "devops-revision/external/devops-exercises"]
+	path = devops-exercises
+	url = https://github.com/bregman-arie/devops-exercises.git
