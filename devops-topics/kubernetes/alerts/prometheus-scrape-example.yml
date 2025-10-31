@@ -1,0 +1,29 @@
+# Example Prometheus scrape_config for kube-state-metrics and kubelet
+# Use in prometheus.yml or create PodMonitor/ServiceMonitor for Prometheus Operator
+
+scrape_configs:
+  - job_name: 'kube-state-metrics'
+    kubernetes_sd_configs:
+      - role: pod
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        regex: kube-state-metrics
+        action: keep
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_port, __address__]
+        regex: ([0-9]+);(.+)
+        replacement: $2:$1
+        target_label: __address__
+
+  - job_name: 'kubelet'
+    kubernetes_sd_configs:
+      - role: node
+    scheme: https
+    tls_config:
+      insecure_skip_verify: true
+    relabel_configs:
+      - source_labels: [__address__]
+        regex: (.+):10250
+        replacement: ${1}:10250
+        target_label: __address__
+
+# Notes: kubelet scraping may require TLS and auth. For Prometheus Operator use PodMonitors/ServiceMonitors.

@@ -1,0 +1,55 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: prometheus-self-alerts
+  namespace: monitoring
+  labels:
+    role: alert-rules
+spec:
+  groups:
+  - name: prometheus.self.rules
+    rules:
+    - alert: PrometheusTargetDown
+      expr: up{job="prometheus"} == 0
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Prometheus scrape target down"
+        description: "A Prometheus target is down (up == 0). Check target reachability and service discovery."
+
+    - alert: PrometheusTSDBHeadSeriesHigh
+      expr: prometheus_tsdb_head_series > 200000
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Prometheus head series count high"
+        description: "Prometheus head series exceed 200k series. Consider reducing cardinality or sharding/remote write."
+
+    - alert: PrometheusEngineQueryDurationHigh
+      expr: rate(prometheus_engine_query_duration_seconds_sum[5m]) / rate(prometheus_engine_query_duration_seconds_count[5m]) > 1
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Prometheus query duration increased"
+        description: "Average query duration exceeded 1s. Consider adding recording rules or tuning queries."
+
+    - alert: PrometheusWALCorruption
+      expr: prometheus_tsdb_wal_fsync_duration_seconds_count > 0
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Prometheus WAL fsync events"
+        description: "WAL fsync events observed; investigate disk I/O and TSDB health."
+
+    - alert: PrometheusTargetScrapeFailuresHigh
+      expr: increase(prometheus_scrape_series_added[5m]) == 0 and increase(prometheus_tsdb_head_series[5m]) == 0
+      for: 15m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Possible scrape failures or stalled ingestion"
+        description: "No new series added and head series unchanged; check scrape configs, relabeling and network connectivity."

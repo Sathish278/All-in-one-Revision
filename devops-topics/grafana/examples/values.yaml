@@ -1,0 +1,44 @@
+## Example Helm values for provisioning Grafana with a Prometheus datasource and dashboard
+# Adapt these values for the grafana/grafana Helm chart and your environment.
+
+adminPassword: "S3cr3t"
+
+persistence:
+  enabled: true
+
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        access: proxy
+        url: http://prometheus:9090
+        isDefault: true
+
+dashboards:
+  default:
+    grafana-example-node-cpu:
+      gnetId: null
+      revision: 1
+      datasource: Prometheus
+      # The chart will look for this dashboard under the configured dashboard provider path
+      # When using a sidecar that loads ConfigMaps, create a ConfigMap named e.g. grafana-dashboard-<name>
+
+dashboardProviders:
+  dashboardproviders:
+    apiVersion: 1
+    providers:
+      - name: 'default'
+        orgId: 1
+        folder: ''
+        type: file
+        disableDeletion: false
+        options:
+          path: /var/lib/grafana/dashboards
+
+# If using the kube-prometheus-stack or grafana chart with sidecar, enable loading dashboards from ConfigMaps
+dashboardsConfigMaps:
+  enabled: true
+
+# Example: enable provisioning of datasources via values (used by many charts)

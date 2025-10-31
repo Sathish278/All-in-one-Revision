@@ -1,0 +1,30 @@
+# Example Prometheus scrape_config for CAST AI agent in Kubernetes
+# - Use this snippet in prometheus.yml (non-operator) or adapt to a ServiceMonitor/PodMonitor for Prometheus Operator.
+
+scrape_configs:
+  - job_name: 'castai-agent'
+    kubernetes_sd_configs:
+      - role: pod
+    relabel_configs:
+      # Keep pods labeled app=castai-agent (or adjust label selector to your deployment)
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        regex: castai-agent
+        action: keep
+      # If the agent exposes metrics on a specific port annotation, map it to __address__
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_port, __address__]
+        regex: ([0-9]+);(.+)
+        replacement: $2:$1
+        target_label: __address__
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scheme]
+        regex: https
+        replacement: https
+        target_label: __scheme__
+
+    metric_relabel_configs:
+      # Drop overly high-cardinality labels if vendor exposes them
+      - source_labels: [__meta_kubernetes_pod_name]
+        action: drop
+
+# Notes:
+# - If you run the Prometheus Operator, prefer creating a ServiceMonitor/PodMonitor instead of editing prometheus.yml.
+# - Ensure the scrape interval matches the cadence you need (default 15s). Use relabeling to keep label cardinality low.

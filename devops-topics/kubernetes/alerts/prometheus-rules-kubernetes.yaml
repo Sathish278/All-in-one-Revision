@@ -1,0 +1,64 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: kubernetes-alerts
+  namespace: monitoring
+  labels:
+    role: alert-rules
+spec:
+  groups:
+  - name: kubernetes.rules
+    rules:
+    - alert: KubeAPIServerDown
+      expr: absent(up{job="kube-apiserver"} == 1)
+      for: 2m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Kubernetes API server is not reachable"
+        description: "Prometheus cannot scrape the kube-apiserver. Check control plane and API load balancer."
+
+    - alert: KubeNodeNotReady
+      expr: kube_node_status_condition{condition="Ready",status!="true"} > 0
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "One or more Kubernetes nodes NotReady"
+        description: "Nodes are in NotReady state. Check kubelet, networking, and node resource pressure."
+
+    - alert: KubePodHighRestartCount
+      expr: increase(kube_pod_container_status_restarts_total[15m]) > 5
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Pods restarting frequently"
+        description: "Pod containers restarted more than 5 times in the last 15 minutes; investigate crash loops and resource limits."
+
+    - alert: KubeSchedulerDown
+      expr: absent(up{job="kube-scheduler"} == 1)
+      for: 2m
+      labels:
+        severity: critical
+      annotations:
+        summary: "kube-scheduler is not being scraped"
+        description: "kube-scheduler may be down or unreachable. Check scheduler pods and leader election."
+
+    - alert: KubePVCNotBound
+      expr: kube_persistentvolumeclaim_status_phase{phase!="Bound"} > 0
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: "PersistentVolumeClaims not bound"
+        description: "One or more PVCs are pending/unbound. Check storageclass provisioning and cloud provider quotas."
+
+    - alert: KubeHighPodEvictionRate
+      expr: increase(kube_pod_evictions_total[10m]) > 5
+      for: 10m
+      labels:
+        severity: critical
+      annotations:
+        summary: "High pod eviction rate"
+        description: "Several pods were evicted in the last 10 minutes; possible OOM, node pressure, or preemption events."

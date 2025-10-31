@@ -1,0 +1,74 @@
+{ 
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "options": {},
+      "targets": [
+        {
+          "expr": "sum(rate(castai_agent_provision_events_total[5m])) by (cluster)",
+          "interval": "",
+          "legendFormat": "{{cluster}}",
+          "refId": "A"
+        }
+      ],
+      "title": "CAST AI: Provisioning events rate (5m)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 9 },
+      "id": 2,
+      "options": {},
+      "targets": [
+        {
+          "expr": "sum(rate(castai_spot_eviction_count_total[5m])) by (region)",
+          "legendFormat": "{{region}}",
+          "refId": "B"
+        }
+      ],
+      "title": "Spot evictions (5m)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 9 },
+      "id": 3,
+      "options": {},
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(castai_node_lifecycle_seconds_bucket[5m])) by (le))",
+          "legendFormat": "95th pct lifecycle (s)",
+          "refId": "C"
+        }
+      ],
+      "title": "Node provisioning latency (95th pct)",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 36,
+  "style": "dark",
+  "tags": ["castai","cost","autoscaler"],
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "CAST AI — Example Overview",
+  "uid": null,
+  "version": 1
+}

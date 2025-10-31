@@ -1,0 +1,46 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: grafana-alerts
+  namespace: monitoring
+  labels:
+    role: alert-rules
+spec:
+  groups:
+  - name: grafana.rules
+    rules:
+    - alert: GrafanaDown
+      expr: absent(up{job="grafana"} == 1)
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Grafana is down or not being scraped"
+        description: "Prometheus cannot scrape Grafana (/metrics). Check Grafana pod(s), service and network connectivity."
+
+    - alert: GrafanaDatasourceErrors
+      expr: increase(grafana_http_request_duration_seconds_count{path=~"/api/datasources/.*/proxy/.*"}[5m]) > 0
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Grafana datasource proxy errors detected"
+        description: "Grafana recorded errors proxying datasource requests. Investigate datasource health and network connectivity."
+
+    - alert: GrafanaAlertingNotificationsFailed
+      expr: increase(grafana_alert_notification_failures_total[5m]) > 0
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Grafana alert notification failures"
+        description: "Grafana failed to send alert notifications in the last 5 minutes. Check configured notification channels and Grafana logs."
+
+    - alert: GrafanaDashboardProvisioningFailed
+      expr: increase(grafana_dashboard_provisioning_failures_total[10m]) > 0
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Dashboard provisioning failures in Grafana"
+        description: "Grafana failed to provision one or more dashboards from the provisioning path. Check dashboard JSON and provisioning provider."

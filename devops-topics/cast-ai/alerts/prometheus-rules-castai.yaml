@@ -1,0 +1,81 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: castai-alerts
+  namespace: monitoring
+  labels:
+    role: alert-rules
+spec:
+  groups:
+  - name: castai.rules
+    rules:
+    - alert: CASTAIProvisioningErrorsHigh
+      expr: |
+        increase(castai_node_provision_errors_total[5m]) > 0
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "CAST AI provisioning errors detected"
+        description: |
+          Provisioning errors increased in the last 5 minutes ({{ $value }}). Check CAST AI agent logs and cloud provider quotas.
+        runbook: "https://your-runbook-url/runbooks/castai/provisioning-errors"
+
+    - alert: CASTAISpotEvictionRateHigh
+      expr: |
+        increase(castai_spot_eviction_count_total[10m]) > 3
+      for: 10m
+      labels:
+        severity: critical
+      annotations:
+        summary: "High spot eviction rate detected"
+        description: |
+          Spot evictions increased significantly in the last 10 minutes ({{ $value }}). Investigate region capacity and CAST AI fallback behavior.
+        runbook: "https://your-runbook-url/runbooks/castai/spot-evictions"
+
+    - alert: CASTAIProvisioningLatencyHigh
+      expr: |
+        histogram_quantile(0.95, sum(rate(castai_node_lifecycle_seconds_bucket[5m])) by (le)) > 300
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: "CAST AI provisioning latency (95th) is high"
+        description: |
+          95th percentile node provisioning time exceeded threshold ({{ $value }} seconds). Check cloud API throttling and agent health.
+        runbook: "https://your-runbook-url/runbooks/castai/provisioning-latency"
+
+    - alert: CASTAIProvisioningSurge
+      expr: |
+        increase(castai_agent_provision_events_total[5m]) > 20
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Spike in CAST AI provisioning events"
+        description: |
+          Large number of provisioning events observed in the last 5 minutes ({{ $value }}). This may indicate churn or an automated scale event.
+        runbook: "https://your-runbook-url/runbooks/castai/provisioning-surge"
+
+    - alert: CASTAIDisruptionRiskHigh
+      expr: |
+        (sum(increase(castai_spot_eviction_count_total[5m])) by (cluster) / sum(increase(castai_agent_provision_events_total[5m])) by (cluster)) > 0.5
+      for: 10m
+      labels:
+        severity: critical
+      annotations:
+        summary: "High risk of disruption due to spot evictions"
+        description: |
+          More than 50% of provisioning events are spot evictions over the last 10 minutes ({{ $value }}). Consider increasing fallback to on-demand or throttling spot usage.
+        runbook: "https://your-runbook-url/runbooks/castai/disruption-risk"
+
+    - alert: CASTAIAgentUnresponsive
+      expr: |
+        absent(up{job="castai-agent"} == 1)
+      for: 10m
+      labels:
+        severity: critical
+      annotations:
+        summary: "CAST AI agent scrape absent or down"
+        description: "The CAST AI agent /metrics endpoint is not responding or Prometheus cannot scrape it. Check agent pod status and network connectivity."
+        runbook: "https://your-runbook-url/runbooks/castai/agent-unresponsive"
