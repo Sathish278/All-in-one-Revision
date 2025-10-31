@@ -136,5 +136,5 @@ Note: use Helm values files for maintainability instead of long CLI overrides.
 --
 
 If this looks good I'll:
-- add a sample dashboard JSON file in `devops-revision/topics/grafana/examples/`,
-- or create a small Helm values file example for provisioning in `devops-revision/topics/grafana/values.yaml`.
+- add a sample dashboard JSON file in `devops-topics/grafana/examples/`,
+- or create a small Helm values file example for provisioning in `devops-topics/grafana/values.yaml`.
