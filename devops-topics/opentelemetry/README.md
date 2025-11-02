@@ -25,7 +25,77 @@
 6) Interview Q&A
 - Q: When use tail-based sampling? A: When you need to sample based on downstream behavior (e.g., only trace requests that result in errors).
 
+7) Sample Collector Config
+```yaml
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+    timeout: 1s
+    send_batch_size: 1024
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 1024
+
+exporters:
+  prometheus:
+    endpoint: 0.0.0.0:8889
+  otlp:
+    endpoint: tempo:4317
+    tls:
+      insecure: true
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [otlp]
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [prometheus]
+```
+
+8) Instrumentation Example (Go)
+```go
+import (
+    "go.opentelemetry.io/otel"
+    "go.opentelemetry.io/otel/sdk/trace"
+)
+
+func main() {
+    tp := initTracer()
+    defer tp.Shutdown(context.Background())
+    
+    tracer := otel.Tracer("service-name")
+    ctx, span := tracer.Start(context.Background(), "operation-name")
+    defer span.End()
+    
+    // Add attributes
+    span.SetAttributes(attribute.String("key", "value"))
+}
+```
+
+9) Dashboard Correlation Example
+```mermaid
+graph LR
+    A[Trace View] -->|trace_id| B[Logs]
+    B -->|service.name| C[Metrics Dashboard]
+    C -->|timestamp| B
+```
+
+Key correlation fields:
+- trace_id: Link traces to logs
+- service.name: Group metrics by service
+- timestamp: Align metrics/logs timeline
+
 --
 
-I can add a minimal Collector config, a sample instrumentation snippet (Go/Python), and a dashboard example for traces→logs→metrics correlation.
 ```
